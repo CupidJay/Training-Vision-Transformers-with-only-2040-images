@@ -1,9 +1,7 @@
 # Training-Vision-Transformers-with-only-2040-images
 Official PyTorch implementation of training vision transformers with only 2040 images. 
 
-Paper is available at [[arxiv]](https://arxiv.org/abs/2201.10728). 
-
-I have cleaned up the codebase and am re-running the experiments to ensure correctness. Codes will be available in one or two days.
+Paper is available at [[arxiv]](https://arxiv.org/abs/2201.10728). Codes are now available.
 
 ## Getting Started
 
@@ -15,67 +13,56 @@ I have cleaned up the codebase and am re-running the experiments to ensure corre
 * CUDA 10.1
 
 ### Pre-training stage
-- Pre-training stage using instance discrimination (c.f. run_deit_tiny_), run:
+- Pre-training stage using instance discrimination (c.f. run_deit_tiny_instance_discrimination_flowers.sh), run:
 ```
-python main_moco_pretraining.py \
-  -a resnet50 \
-  --lr 0.03 \
-  --batch-size 128 --epochs 200 \
-  --input-size [112 or 56 for small resolutions and 224 for baseline] \
-  --dist-url 'tcp://localhost:10004' --multiprocessing-distributed --world-size 1 --rank 0 \
-  --gpus 0,1,2,3 \
-  --save-dir cub_checkpoints \
-  --mlp --moco-t 0.2 --moco-k 4096 --aug-plus --cos \
-  [path to cub200 dataset]
-
+#! /bin/sh
+python main_deit_instance_discrimination.py \
+    --gpus 8,9,10,11 \
+    -a deit_tiny_patch16_224 \
+    --dist-url 'tcp://localhost:10003' --dist-backend   'nccl' \
+    --multiprocessing-distributed  --world-size 1 --rank 0  \
+    --size_crops 112 112 \ # multi-crop resolution
+    --nmb_crops 2 4 \ # multi-crop number each view
+    --min_scale_crops 0.14 0.05 \  
+    --max_scale_crops 1. 0.4 \  
+    --embed-dim 192 --num-classes 2040 \
+    -j 16  --wd 1e-3 --lr 5e-4 \
+    --cutmix --alpha 0.5 \
+    --save_dir checkpoints \
+    -b 256 --epochs 800 [path to flowers dataset]
 ```
-  Multi-stage-pre-training: we use 112->224 as an example, first pre-train a model under 112x112 resolution as before, then run:
-```
-python main_moco_pretraining.py \
-  -a resnet50 \
-  --lr 0.03 \
-  --batch-size 128 --epochs 200 \
-  --input-size 224 \
-  --dist-url 'tcp://localhost:10004' --multiprocessing-distributed --world-size 1 --rank 0 \
-  --gpus 0,1,2,3 \
-  --save-dir cub_checkpoints \
-  --mlp --moco-t 0.2 --moco-k 4096 --aug-plus --cos \
-  --pretrained [112 resolution pretrained model]
-  [path to cub200 dataset]
-
-```
+For pvtv2 and t2t please use run_pvtv2_instance_discrimination_flowers.sh and run_t2t_vit_t14_instance_discrimination_flowers.sh, respectively.
 
 
-- Fine-tuning stage: we use mixup for example (c.f. main_train_mixup.sh):
-```
-python main.py \
-  -a resnet50 \
-  --lr 0.1 \
-  --batch-size 64 --epochs 120 \
-  --gpus 12,13,14,15 \
-  --mixup --alpha 1.0 \
-  --pretrained [path to SSL pre-trained model] \
-  --num-classes 200 \
-  [path to cub200 dataset]
-```
 
 ### Fine-tuning stage
 
-- Fine-tuning with 224x224 resolution (c.f. main_train_freeze.sh), run:
+- First, we fine-tune with 224x224 resolution (c.f. run_deit_tiny_flowers.sh), run:
 ```
-python main_freeze.py \
-  -a resnet50 \
-  --lr 0.1 \
-  --batch-size 64 --epochs 10 \
-  --step-lr --freeze \
-  --gpus 8,9,10,11 \
-  --save-dir cub_checkpoints \
-  --pretrained [path to SSL pretrained custom_resnet50 model] \
-  --num-classes 200 \
-  [path to cub200 dataset]
+python main_deit.py \
+    --gpus 8,9,10,11 \
+    -a deit_tiny_patch16_224 \
+    --dist-url 'tcp://localhost:10003' --dist-backend   'nccl' \
+    --multiprocessing-distributed  --world-size 1 --rank 0  \
+    --pretrained [path to the pre-trained checkpoint above] \
+    -j 16 --wd 1e-3 --lr 5e-4 \
+    --embed-dim 192 --num-classes 102 \
+    -b 256 --alpha 0.5 --epochs 800 \ # we train for 800 epochs with 224 resolution in the paper, you can set it to 200 to speed up
+    [path to flowers dataset]
 ```
-- Fine-tuning stage, set --pretrained to the model obtained in the previous stage in main_train_mixup.sh
 
+- Then, we continue to finetune with 448x448 resolution (c.f. run_deit_tiny_448_flowers.sh), run:
+```
+python main_deit.py \
+    --gpus 8,9,10,11 \
+    -a deit_tiny_patch16_224 --input-size 448 \
+    --dist-url 'tcp://localhost:10003' --dist-backend   'nccl' \
+    --multiprocessing-distributed  --world-size 1 --rank 0  \
+    --pretrained [path to the 224x224 fine-tuned checkpoints above] \
+    --embed-dim 192 --num-classes 102 \
+    -j 16 --wd 1e-3 --lr 5e-5 \
+    -b 128 --alpha 0.5 --epochs 100 [path to flowers dataset]
+```
 
 
 ## Citation
