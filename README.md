@@ -30,9 +30,8 @@ python main_deit_instance_discrimination.py \
     --save_dir checkpoints \
     -b 256 --epochs 800 [path to flowers dataset]
 ```
-For pvtv2 and t2t please use run_pvtv2_instance_discrimination_flowers.sh and run_t2t_vit_t14_instance_discrimination_flowers.sh, respectively.
-
-
+For pvtv2 please use run_pvtv2_instance_discrimination_flowers.sh.
+For t2t, please use run_t2t_vit_t14_instance_discrimination_flowers.sh.
 
 ### Fine-tuning stage
 
@@ -49,6 +48,8 @@ python main_deit.py \
     -b 256 --alpha 0.5 --epochs 800 \ # we train for 800 epochs with 224 resolution in the paper, you can set it to 200 to speed up
     [path to flowers dataset]
 ```
+For pvtv2 please use run_pvtv2_flowers.sh.
+For t2t, please use run_t2t_vit_t14_flowers.sh.
 
 - Then, we continue to finetune with 448x448 resolution (c.f. run_deit_tiny_448_flowers.sh), run:
 ```
@@ -62,6 +63,8 @@ python main_deit.py \
     -j 16 --wd 1e-3 --lr 5e-5 \
     -b 128 --alpha 0.5 --epochs 100 [path to flowers dataset]
 ```
+For pvtv2 please use run_pvtv2_448_flowers.sh.
+For t2t, please use run_t2t_vit_t14_448_flowers.sh.
 
 
 ## Citation
