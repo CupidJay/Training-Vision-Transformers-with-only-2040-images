@@ -15,7 +15,6 @@ Paper is available at [[arxiv]](https://arxiv.org/abs/2201.10728). Codes are now
 ### Pre-training stage
 - Pre-training stage using instance discrimination (c.f. run_deit_tiny_instance_discrimination_flowers.sh), run:
 ```
-#! /bin/sh
 python main_deit_instance_discrimination.py \
     --gpus 8,9,10,11 \
     -a deit_tiny_patch16_224 \
