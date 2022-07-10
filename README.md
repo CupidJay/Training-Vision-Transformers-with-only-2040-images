@@ -1,8 +1,7 @@
 # Training-Vision-Transformers-with-only-2040-images
 Official PyTorch implementation of training vision transformers with only 2040 images. 
 
-Paper is available at [[arxiv]](https://arxiv.org/abs/2201.10728). Codes are now available.
-
+Our paper is accepted to ECCV2022 and available at [[arxiv]](https://arxiv.org/abs/2201.10728).  
 ## Getting Started
 
 ### Prerequisites
@@ -74,5 +73,5 @@ Please consider citing our work in your publications if it helps your research.
    title         = {Training Vision Transformers with Only 2040 Images},
    author        = {Yun-Hao Cao, Hao Yu and Jianxin Wu},
    year          = {2022},
-   journal = {arXiv preprint arXiv:2201.10728}}
+   journal = {The European Conference on Computer Vision}}
 ```
